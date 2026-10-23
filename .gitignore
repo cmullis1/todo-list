@@ -1,0 +1,14 @@
+# Local config, data and logs stay on the machine that runs the app.
+config.ini
+*.db
+instance/
+tasks.json
+*.log
+*.log.*
+
+# Python and PyInstaller output
+__pycache__/
+*.pyc
+.venv/
+build/
+dist/
