@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from ..models import User
 from ..utils.security import hash_password, verify_password, generate_token, is_strong_password, get_token_expiration
 from ..schemas import UserSchema
@@ -7,6 +7,7 @@ from ..utils.decorators import token_required
 from ..models import db
 from marshmallow import ValidationError
 import logging
+from datetime import datetime
 
 auth_ns = Namespace('auth', description='Authentication operations')
 
@@ -52,7 +53,7 @@ class Login(Resource):
             if verify_password(user.password, password):
                 # Generate token and set expiration
                 token = generate_token()
-                token_expiration = get_token_expiration(days=7)  # Token valid for 7 days
+                token_expiration = get_token_expiration(days=current_app.config['ACCESS_TOKEN_EXPIRATION_DAYS'])
                 user.token = token
                 user.token_expiration = token_expiration.isoformat()
                 db.session.commit()

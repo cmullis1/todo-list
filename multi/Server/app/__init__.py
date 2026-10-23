@@ -23,6 +23,7 @@ def create_app():
     app.config['SECRET_KEY'] = config['DEFAULT']['SECRET_KEY']
     app.config['SQLALCHEMY_DATABASE_URI'] = config['DEFAULT']['DATABASE_URL']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['ACCESS_TOKEN_EXPIRATION_DAYS'] = config.getint('SETTINGS', 'ACCESS_TOKEN_EXPIRATION_DAYS', fallback=7)
 
     # Initialize extensions
     db.init_app(app)
@@ -47,5 +48,9 @@ def create_app():
     api.add_namespace(auth_ns, path='/api/v1/auth')
     api.add_namespace(users_ns, path='/api/v1/users')
     api.add_namespace(tasks_ns, path='/api/v1/tasks')
+
+    # Login gets its own, stricter limit on top of the default one
+    login_limit = config.get('SETTINGS', 'RATE_LIMIT_LOGIN', fallback='50 per minute')
+    app.view_functions['auth_login'] = limiter.limit(login_limit)(app.view_functions['auth_login'])
 
     return app
